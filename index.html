@@ -1,0 +1,4694 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RBM Admin Panel - Superior Management System</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --primary-color: #0c4a6e;
+            --secondary-color: #075985;
+            --accent-color: #0ea5e9;
+            --background-color: #f8fafc;
+            --text-color: #0f172a;
+            --sidebar-color: #020617;
+            --sidebar-text-color: #f1f5f9;
+            --font-family: 'Inter', sans-serif;
+            --font-size: 16px;
+            --sidebar-width: 280px;
+            --border-radius: 12px;
+            --shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            --shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: var(--font-family);
+            font-size: var(--font-size);
+            background-color: var(--background-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        .app {
+            display: flex;
+            min-height: 100vh;
+        }
+
+        .app-container {
+            display: flex;
+            width: 100%;
+        }
+
+        /* Sidebar Styles */
+        .sidebar {
+            width: var(--sidebar-width);
+            background-color: var(--sidebar-color);
+            color: var(--sidebar-text-color);
+            transition: width 0.3s ease, transform 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            position: fixed;
+            height: 100vh;
+            z-index: 100;
+            overflow-y: auto;
+        }
+
+        .sidebar.collapsed {
+            width: 80px;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .logo {
+            font-size: 1.8rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo i {
+            -webkit-text-fill-color: #0ea5e9;
+        }
+
+        .toggle-btn {
+            background: none;
+            border: none;
+            color: var(--sidebar-text-color);
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .toggle-btn:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .sidebar-nav ul {
+            list-style: none;
+            padding: 1rem 0;
+        }
+
+        .sidebar-nav li {
+            margin: 0.3rem 0;
+        }
+
+        .sidebar-nav a {
+            display: flex;
+            align-items: center;
+            padding: 0.9rem 1.5rem;
+            color: var(--sidebar-text-color);
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border-radius: 0;
+            margin: 0 0.8rem;
+            position: relative;
+        }
+
+        .sidebar-nav a:hover {
+            background-color: rgba(255, 255, 255, 0.05);
+        }
+
+        .sidebar-nav a.active {
+            background-color: rgba(14, 165, 233, 0.15);
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+
+        .sidebar-nav a.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #0ea5e9;
+            border-radius: 0 4px 4px 0;
+        }
+
+        .sidebar-nav .icon {
+            margin-right: 1rem;
+            font-size: 1.2rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .sidebar-nav .label {
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .sidebar-footer {
+            margin-top: auto;
+            padding: 1.5rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .ai-assistant-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 0.8rem;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+        }
+
+        .ai-assistant-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Main Content */
+        .main-content {
+            flex: 1;
+            margin-left: var(--sidebar-width);
+            transition: margin-left 0.3s ease;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-content.expanded {
+            margin-left: 80px;
+        }
+
+        .topbar {
+            height: 80px;
+            background-color: var(--background-color);
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            box-shadow: var(--shadow);
+        }
+
+        .topbar-left {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .search-bar {
+            position: relative;
+            width: 300px;
+        }
+
+        .search-bar i {
+            position: absolute;
+            left: 15px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #94a3b8;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 0.75rem 0.75rem 0.75rem 2.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
+        }
+
+        .search-bar input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .topbar-right {
+            display: flex;
+            align-items: center;
+            gap: 1.5rem;
+        }
+
+        .notification-btn {
+            position: relative;
+            background: none;
+            border: none;
+            color: #64748b;
+            font-size: 1.2rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .notification-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
+        }
+
+        .notification-badge {
+            position: absolute;
+            top: 5px;
+            right: 5px;
+            width: 18px;
+            height: 18px;
+            background-color: #ef4444;
+            color: white;
+            border-radius: 50%;
+            font-size: 0.7rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .user-menu {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 50px;
+            transition: background-color 0.3s ease;
+        }
+
+        .user-menu:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 500;
+        }
+
+        .user-info h3 {
+            font-size: 0.95rem;
+            font-weight: 600;
+            margin-bottom: 0.1rem;
+        }
+
+        .user-info p {
+            font-size: 0.8rem;
+            color: #64748b;
+        }
+
+        .content {
+            padding: 2rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Dashboard Styles */
+        .dashboard-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .dashboard-title {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .dashboard-subtitle {
+            font-size: 1rem;
+            color: #64748b;
+        }
+
+        .dashboard-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .date-filter {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background-color: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            padding: 0.5rem 1rem;
+            font-size: 0.9rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .date-filter:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .stat-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 100px;
+            height: 100px;
+            background: radial-gradient(circle at top right, rgba(14, 165, 233, 0.1), transparent 70%);
+            border-radius: 0 0 0 100%;
+        }
+
+        .stat-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .stat-title {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: #64748b;
+        }
+
+        .stat-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.blue {
+            background-color: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+        }
+
+        .stat-icon.green {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .stat-icon.purple {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .stat-icon.orange {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-change {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+
+        .stat-change.positive {
+            color: #10b981;
+        }
+
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
+        .charts-container {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .chart-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .chart-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .chart-options {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .chart-option {
+            padding: 0.4rem 0.8rem;
+            background-color: #f1f5f9;
+            border: none;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .chart-option.active {
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+        .chart-container {
+            height: 300px;
+            position: relative;
+        }
+
+        .activity-feed {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .activity-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .activity-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .activity-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .activity-item {
+            display: flex;
+            gap: 1rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .activity-item:last-child {
+            border-bottom: none;
+            padding-bottom: 0;
+        }
+
+        .activity-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .activity-icon.user {
+            background-color: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+        }
+
+        .activity-icon.product {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .activity-icon.order {
+            background-color: rgba(139, 92, 246, 0.1);
+            color: #8b5cf6;
+        }
+
+        .activity-content {
+            flex: 1;
+        }
+
+        .activity-text {
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .activity-time {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        /* Page Builder Styles */
+        .page-builder-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-builder-content {
+            display: grid;
+            grid-template-columns: 300px 1fr;
+            gap: 2rem;
+        }
+
+        .pages-list {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            height: fit-content;
+        }
+
+        .pages-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .pages-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .add-page-btn {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .add-page-btn:hover {
+            background-color: #0284c7;
+            transform: scale(1.05);
+        }
+
+        .pages-search {
+            margin-bottom: 1rem;
+        }
+
+        .pages-search input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .pages-list ul {
+            list-style: none;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .pages-list li {
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .pages-list li:hover {
+            background-color: #f1f5f9;
+        }
+
+        .pages-list li.active {
+            background-color: rgba(14, 165, 233, 0.1);
+            color: #0ea5e9;
+            font-weight: 500;
+        }
+
+        .page-info {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .page-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 8px;
+            background-color: #f1f5f9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+        }
+
+        .page-name {
+            font-weight: 500;
+        }
+
+        .page-menu {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94a3b8;
+            cursor: pointer;
+        }
+
+        .page-menu:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+            color: var(--text-color);
+        }
+
+        .page-editor-container {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .page-editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .page-title-editor {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .page-title-input {
+            font-size: 1.5rem;
+            font-weight: 600;
+            border: none;
+            background: none;
+            color: var(--text-color);
+            padding: 0.5rem;
+            border-radius: var(--border-radius);
+            transition: background-color 0.3s ease;
+        }
+
+        .page-title-input:focus {
+            outline: none;
+            background-color: #f8fafc;
+        }
+
+        .page-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .page-tabs {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #f1f5f9;
+        }
+
+        .page-tab {
+            padding: 0.75rem 1rem;
+            border-bottom: 2px solid transparent;
+            cursor: pointer;
+            font-weight: 500;
+            color: #64748b;
+            transition: all 0.3s ease;
+        }
+
+        .page-tab.active {
+            color: #0ea5e9;
+            border-bottom-color: #0ea5e9;
+        }
+
+        .page-content {
+            min-height: 400px;
+        }
+
+        .page-sections {
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+
+        .page-section {
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--border-radius);
+            padding: 1.5rem;
+            position: relative;
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .section-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .section-actions {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .section-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background-color: #f1f5f9;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .section-btn:hover {
+            background-color: #e2e8f0;
+            color: var(--text-color);
+        }
+
+        .section-content {
+            background-color: #f8fafc;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            min-height: 100px;
+        }
+
+        .add-section-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            padding: 1rem;
+            border: 1px dashed #cbd5e1;
+            border-radius: var(--border-radius);
+            background: none;
+            color: #64748b;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            gap: 0.5rem;
+            font-weight: 500;
+        }
+
+        .add-section-btn:hover {
+            border-color: #0ea5e9;
+            color: #0ea5e9;
+            background-color: rgba(14, 165, 233, 0.05);
+        }
+
+        /* Preview Modal - Enhanced */
+        .preview-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.8);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            padding: 2rem;
+        }
+
+        .preview-content {
+            width: 100%;
+            max-width: 1200px;
+            height: 90vh;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .preview-header {
+            padding: 1rem 1.5rem;
+            background-color: #f8fafc;
+            border-bottom: 1px solid #e2e8f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .preview-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .preview-body {
+            flex: 1;
+            overflow-y: auto;
+            background-color: white;
+        }
+
+        /* Preview Website Styles */
+        .preview-website {
+            min-height: 100%;
+            font-family: 'Inter', sans-serif;
+            color: #333;
+            line-height: 1.6;
+        }
+
+        .preview-navbar {
+            background-color: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .preview-logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #0ea5e9;
+        }
+
+        .preview-nav-links {
+            display: flex;
+            gap: 1.5rem;
+        }
+
+        .preview-nav-links a {
+            text-decoration: none;
+            color: #333;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .preview-nav-links a:hover {
+            color: #0ea5e9;
+        }
+
+        .preview-hero {
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            color: white;
+            padding: 5rem 2rem;
+            text-align: center;
+        }
+
+        .preview-hero h1 {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+        }
+
+        .preview-hero p {
+            font-size: 1.25rem;
+            max-width: 600px;
+            margin: 0 auto 2rem;
+        }
+
+        .preview-cta {
+            display: inline-block;
+            background-color: white;
+            color: #0ea5e9;
+            padding: 0.75rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            transition: transform 0.3s ease;
+        }
+
+        .preview-cta:hover {
+            transform: translateY(-3px);
+        }
+
+        .preview-section {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-section h2 {
+            font-size: 2rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            color: #0c4a6e;
+        }
+
+        .preview-features {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            margin-top: 3rem;
+        }
+
+        .preview-feature {
+            text-align: center;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            transition: transform 0.3s ease;
+        }
+
+        .preview-feature:hover {
+            transform: translateY(-5px);
+        }
+
+        .preview-feature h3 {
+            font-size: 1.25rem;
+            margin-bottom: 1rem;
+            color: #0ea5e9;
+        }
+
+        .preview-testimonials {
+            background-color: #f8fafc;
+            padding: 4rem 2rem;
+        }
+
+        .preview-testimonials h2 {
+            font-size: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #0c4a6e;
+        }
+
+        .preview-testimonial-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .preview-testimonial {
+            background-color: white;
+            padding: 2rem;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+        }
+
+        .preview-testimonial p {
+            font-style: italic;
+            margin-bottom: 1rem;
+        }
+
+        .preview-testimonial-author {
+            font-weight: 600;
+            color: #0ea5e9;
+        }
+
+        .preview-products {
+            padding: 4rem 2rem;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .preview-products h2 {
+            font-size: 2rem;
+            margin-bottom: 3rem;
+            text-align: center;
+            color: #0c4a6e;
+        }
+
+        .preview-product-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+        }
+
+        .preview-product {
+            background-color: white;
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .preview-product:hover {
+            transform: translateY(-5px);
+        }
+
+        .preview-product img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+        }
+
+        .preview-product-info {
+            padding: 1.5rem;
+        }
+
+        .preview-product h3 {
+            font-size: 1.25rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .preview-product-price {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: #0ea5e9;
+            margin-bottom: 1rem;
+        }
+
+        .preview-product-btn {
+            display: block;
+            width: 100%;
+            padding: 0.75rem;
+            background-color: #0ea5e9;
+            color: white;
+            text-align: center;
+            border-radius: var(--border-radius);
+            text-decoration: none;
+            font-weight: 500;
+            transition: background-color 0.3s ease;
+        }
+
+        .preview-product-btn:hover {
+            background-color: #0284c7;
+        }
+
+        .preview-footer {
+            background-color: #020617;
+            color: white;
+            padding: 3rem 2rem;
+            text-align: center;
+        }
+
+        .preview-footer h3 {
+            font-size: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .preview-footer p {
+            max-width: 600px;
+            margin: 0 auto 2rem;
+            color: #94a3b8;
+        }
+
+        .preview-social-links {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .preview-social-links a {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            background-color: rgba(255, 255, 255, 0.1);
+            color: white;
+            border-radius: 50%;
+            transition: background-color 0.3s ease;
+        }
+
+        .preview-social-links a:hover {
+            background-color: #0ea5e9;
+        }
+
+        /* AI Assistant Styles */
+        .ai-assistant {
+            position: fixed;
+            right: 20px;
+            bottom: 20px;
+            width: 380px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            z-index: 1000;
+            display: flex;
+            flex-direction: column;
+            max-height: 70vh;
+            transition: all 0.3s ease;
+            transform: translateY(0);
+        }
+
+        .ai-assistant.minimized {
+            height: 60px;
+            overflow: hidden;
+        }
+
+        .ai-assistant-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 1rem 1.5rem;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            color: white;
+            border-radius: var(--border-radius) var(--border-radius) 0 0;
+        }
+
+        .ai-assistant-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-weight: 600;
+        }
+
+        .ai-assistant-controls {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .ai-control-btn {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: none;
+            border: none;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .ai-control-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .ai-assistant-body {
+            padding: 1.5rem;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .ai-message {
+            margin-bottom: 1.5rem;
+        }
+
+        .ai-message-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+
+        .ai-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+        }
+
+        .ai-message-info {
+            flex: 1;
+        }
+
+        .ai-message-title {
+            font-weight: 600;
+            color: var(--text-color);
+        }
+
+        .ai-message-time {
+            font-size: 0.8rem;
+            color: #94a3b8;
+        }
+
+        .ai-message-content {
+            background-color: #f1f5f9;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        .ai-suggestions {
+            margin-top: 1.5rem;
+        }
+
+        .ai-suggestions-title {
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: var(--text-color);
+        }
+
+        .suggestion-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .suggestion-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            padding: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .suggestion-item:hover {
+            border-color: #0ea5e9;
+            box-shadow: var(--shadow);
+        }
+
+        .suggestion-title {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .suggestion-description {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .ai-input {
+            display: flex;
+            gap: 0.75rem;
+            margin-top: 1.5rem;
+        }
+
+        .ai-input input {
+            flex: 1;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 50px;
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-size: 0.9rem;
+        }
+
+        .ai-input input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+        }
+
+        .ai-send-btn {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background-color: #0ea5e9;
+            color: white;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .ai-send-btn:hover {
+            background-color: #0284c7;
+            transform: scale(1.05);
+        }
+
+        /* Theme Customizer Styles */
+        .theme-customizer {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .theme-header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+
+        .theme-title {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .theme-subtitle {
+            font-size: 1.1rem;
+            color: #64748b;
+        }
+
+        .theme-section {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .theme-section-title {
+            font-size: 1.3rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .theme-section-title i {
+            color: #0ea5e9;
+        }
+
+        .color-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .color-picker {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .color-picker-label {
+            font-weight: 500;
+            color: var(--text-color);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .color-preview {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .color-input {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .color-input input[type="color"] {
+            width: 50px;
+            height: 50px;
+            border: none;
+            border-radius: var(--border-radius);
+            cursor: pointer;
+        }
+
+        .color-input input[type="text"] {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-family: monospace;
+        }
+
+        .typography-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .typography-option {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .typography-label {
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .typography-select {
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-size: 0.95rem;
+        }
+
+        .layout-options {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .layout-option {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+        }
+
+        .layout-label {
+            font-weight: 500;
+            color: var(--text-color);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .layout-value {
+            font-weight: 600;
+            color: #0ea5e9;
+        }
+
+        .layout-slider {
+            width: 100%;
+            height: 6px;
+            border-radius: 3px;
+            background: #e2e8f0;
+            outline: none;
+            -webkit-appearance: none;
+        }
+
+        .layout-slider::-webkit-slider-thumb {
+            -webkit-appearance: none;
+            appearance: none;
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            cursor: pointer;
+        }
+
+        .layout-slider::-moz-range-thumb {
+            width: 20px;
+            height: 20px;
+            border-radius: 50%;
+            background: #0ea5e9;
+            cursor: pointer;
+            border: none;
+        }
+
+        .theme-actions {
+            display: flex;
+            justify-content: center;
+            gap: 1.5rem;
+            margin-top: 3rem;
+        }
+
+        /* User Management Styles */
+        .user-management-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .user-filters {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+        }
+
+        .filter-tabs {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .filter-tab {
+            padding: 0.5rem 1rem;
+            border-radius: 50px;
+            background-color: #f1f5f9;
+            border: none;
+            color: #64748b;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .filter-tab.active {
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+        .users-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+            gap: 1.5rem;
+        }
+
+        .user-card {
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 1.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .user-card:hover {
+            transform: translateY(-5px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .user-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-avatar {
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-right: 1rem;
+        }
+
+        .user-info h3 {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+        }
+
+        .user-info p {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .user-details {
+            margin-bottom: 1.5rem;
+        }
+
+        .user-detail {
+            display: flex;
+            align-items: center;
+            margin-bottom: 0.75rem;
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .user-detail i {
+            width: 20px;
+            margin-right: 0.75rem;
+            color: #94a3b8;
+        }
+
+        .user-status {
+            display: inline-block;
+            padding: 0.4rem 0.8rem;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            margin-bottom: 1.5rem;
+        }
+
+        .user-status.active {
+            background-color: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+        }
+
+        .user-status.pending {
+            background-color: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+        }
+
+        .user-status.suspended {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+        }
+
+        .user-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        /* Button Styles */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .btn-primary {
+            background-color: #0ea5e9;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0284c7;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-secondary {
+            background-color: #64748b;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #475569;
+            transform: translateY(-2px);
+            box-shadow: var(--shadow);
+        }
+
+        .btn-outline {
+            background-color: transparent;
+            border: 1px solid #e2e8f0;
+            color: #64748b;
+        }
+
+        .btn-outline:hover {
+            background-color: #f8fafc;
+            color: var(--text-color);
+            border-color: #cbd5e1;
+        }
+
+        .btn-sm {
+            padding: 0.5rem 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Loading Styles */
+        .loading-screen {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            font-size: 1.5rem;
+            color: var(--text-color);
+        }
+
+        .loading {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 50vh;
+            font-size: 1.2rem;
+            color: var(--text-color);
+        }
+
+        /* Auth Styles */
+        .auth-container {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #f8fafc, #e2e8f0);
+            padding: 2rem;
+        }
+
+        .auth-card {
+            width: 100%;
+            max-width: 450px;
+            background-color: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+            padding: 2.5rem;
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .auth-logo {
+            font-size: 2.5rem;
+            font-weight: bold;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 0.5rem;
+        }
+
+        .auth-title {
+            font-size: 1.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            color: var(--text-color);
+        }
+
+        .auth-subtitle {
+            font-size: 1rem;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        .form-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+            color: var(--text-color);
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 0.75rem 1rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: #f8fafc;
+            color: var(--text-color);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: #0ea5e9;
+            box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.1);
+            background-color: white;
+        }
+
+        .auth-actions {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .remember-me {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .remember-me input {
+            width: 18px;
+            height: 18px;
+            accent-color: #0ea5e9;
+        }
+
+        .forgot-password {
+            color: #0ea5e9;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .forgot-password:hover {
+            color: #0284c7;
+            text-decoration: underline;
+        }
+
+        .auth-submit {
+            width: 100%;
+            padding: 0.875rem;
+            background: linear-gradient(135deg, #0ea5e9, #0c4a6e);
+            color: white;
+            border: none;
+            border-radius: var(--border-radius);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-size: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .auth-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .auth-divider {
+            display: flex;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            color: #94a3b8;
+        }
+
+        .auth-divider::before,
+        .auth-divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background-color: #e2e8f0;
+        }
+
+        .auth-divider span {
+            padding: 0 1rem;
+        }
+
+        .social-login {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .social-btn {
+            flex: 1;
+            padding: 0.75rem;
+            border: 1px solid #e2e8f0;
+            border-radius: var(--border-radius);
+            background-color: white;
+            color: var(--text-color);
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .social-btn:hover {
+            background-color: #f8fafc;
+            border-color: #cbd5e1;
+        }
+
+        .auth-links {
+            text-align: center;
+            margin-top: 1.5rem;
+            color: #64748b;
+        }
+
+        .auth-links a {
+            color: #0ea5e9;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .auth-links a:hover {
+            text-decoration: underline;
+        }
+
+        /* Responsive Styles */
+        @media (max-width: 1024px) {
+            .sidebar {
+                transform: translateX(-100%);
+            }
+            
+            .sidebar.mobile-open {
+                transform: translateX(0);
+            }
+            
+            .main-content {
+                margin-left: 0;
+            }
+            
+            .mobile-menu-btn {
+                display: flex;
+            }
+            
+            .charts-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .page-builder-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .pages-list {
+                display: none;
+            }
+            
+            .ai-assistant {
+                width: calc(100% - 40px);
+                right: 20px;
+                left: 20px;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .user-filters {
+                flex-direction: column;
+                gap: 1rem;
+                align-items: stretch;
+            }
+            
+            .search-bar {
+                width: 100%;
+            }
+            
+            .filter-tabs {
+                width: 100%;
+                overflow-x: auto;
+                padding-bottom: 0.5rem;
+            }
+            
+            .users-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .color-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .typography-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .layout-options {
+                grid-template-columns: 1fr;
+            }
+            
+            .theme-actions {
+                flex-direction: column;
+            }
+            
+            .preview-modal {
+                padding: 1rem;
+            }
+            
+            .preview-content {
+                height: 95vh;
+            }
+        }
+
+        @media (min-width: 1025px) {
+            .mobile-menu-btn {
+                display: none;
+            }
+        }
+
+        /* Mobile Menu Button */
+        .mobile-menu-btn {
+            background: none;
+            border: none;
+            color: var(--text-color);
+            font-size: 1.5rem;
+            cursor: pointer;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background-color 0.3s ease;
+        }
+
+        .mobile-menu-btn:hover {
+            background-color: rgba(0, 0, 0, 0.05);
+        }
+
+        /* Animations */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .fade-in {
+            animation: fadeIn 0.5s ease forwards;
+        }
+
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+
+        /* Utility Classes */
+        .text-center { text-align: center; }
+        .text-right { text-align: right; }
+        .text-left { text-align: left; }
+        .mt-1 { margin-top: 0.5rem; }
+        .mt-2 { margin-top: 1rem; }
+        .mt-3 { margin-top: 1.5rem; }
+        .mt-4 { margin-top: 2rem; }
+        .mb-1 { margin-bottom: 0.5rem; }
+        .mb-2 { margin-bottom: 1rem; }
+        .mb-3 { margin-bottom: 1.5rem; }
+        .mb-4 { margin-bottom: 2rem; }
+        .p-1 { padding: 0.5rem; }
+        .p-2 { padding: 1rem; }
+        .p-3 { padding: 1.5rem; }
+        .p-4 { padding: 2rem; }
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-center { justify-content: center; }
+        .justify-between { justify-content: space-between; }
+        .gap-1 { gap: 0.5rem; }
+        .gap-2 { gap: 1rem; }
+        .gap-3 { gap: 1.5rem; }
+        .gap-4 { gap: 2rem; }
+        .w-full { width: 100%; }
+        .h-full { height: 100%; }
+        .rounded { border-radius: var(--border-radius); }
+        .shadow { box-shadow: var(--shadow); }
+        .shadow-lg { box-shadow: var(--shadow-lg); }
+        .bg-white { background-color: white; }
+        .bg-primary { background-color: var(--primary-color); }
+        .text-primary { color: var(--primary-color); }
+        .font-bold { font-weight: 700; }
+        .font-semibold { font-weight: 600; }
+        .font-medium { font-weight: 500; }
+        .text-sm { font-size: 0.875rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        .text-4xl { font-size: 2.25rem; }
+        .transition { transition: all 0.3s ease; }
+        .cursor-pointer { cursor: pointer; }
+        .overflow-hidden { overflow: hidden; }
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .hidden { display: none; }
+        .block { display: block; }
+        .inline-block { display: inline-block; }
+        .inline-flex { display: inline-flex; }
+        .grid { display: grid; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Firebase SDK -->
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-firestore-compat.js"></script>
+    
+    <!-- React and ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    
+    <!-- Babel for JSX transformation -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <!-- React Router -->
+    <script src="https://unpkg.com/react-router-dom@6.11.2/umd/react-router-dom.development.js"></script>
+    
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script type="text/babel">
+        // Firebase configuration - replace with your own config
+        const firebaseConfig = {
+            apiKey: "AIzaSyB5k3lKZ5p5XZ5X5X5X5X5X5X5X5X5X5X5",
+            authDomain: "rbm-admin.firebaseapp.com",
+            projectId: "rbm-admin",
+            storageBucket: "rbm-admin.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:123456789"
+        };
+
+        // Initialize Firebase
+        firebase.initializeApp(firebaseConfig);
+        const auth = firebase.auth();
+        const db = firebase.firestore();
+
+        // Services
+        const dataService = {
+            // Dashboard Stats
+            getDashboardStats: async () => {
+                try {
+                    // In a real app, you would fetch actual data from Firestore
+                    // For this example, we'll return mock data
+                    return {
+                        users: 1248,
+                        products: 356,
+                        orders: 892,
+                        revenue: 45670,
+                        userGrowth: 12.5,
+                        productGrowth: 8.2,
+                        orderGrowth: 15.3,
+                        revenueGrowth: 22.1
+                    };
+                } catch (error) {
+                    console.error('Error fetching dashboard stats:', error);
+                    throw error;
+                }
+            },
+
+            // Pages
+            getPages: async () => {
+                try {
+                    const pagesSnapshot = await db.collection('pages').get();
+                    const pagesList = pagesSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    return pagesList;
+                } catch (error) {
+                    console.error('Error fetching pages:', error);
+                    throw error;
+                }
+            },
+
+            savePage: async (pageData) => {
+                try {
+                    if (pageData.id && pageData.id.startsWith('page-')) {
+                        // This is a new page that hasn't been saved to Firestore yet
+                        const { id, ...pageWithoutId } = pageData;
+                        const docRef = await db.collection('pages').add(pageWithoutId);
+                        return { id: docRef.id, ...pageWithoutId };
+                    } else {
+                        // This is an existing page
+                        await db.collection('pages').doc(pageData.id).update(pageData);
+                        return pageData;
+                    }
+                } catch (error) {
+                    console.error('Error saving page:', error);
+                    throw error;
+                }
+            },
+
+            deletePage: async (pageId) => {
+                try {
+                    await db.collection('pages').doc(pageId).delete();
+                    return true;
+                } catch (error) {
+                    console.error('Error deleting page:', error);
+                    throw error;
+                }
+            },
+
+            // Users
+            getUsers: async () => {
+                try {
+                    const usersSnapshot = await db.collection('users').get();
+                    const usersList = usersSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    return usersList;
+                } catch (error) {
+                    console.error('Error fetching users:', error);
+                    throw error;
+                }
+            },
+
+            updateUserStatus: async (userId, newStatus) => {
+                try {
+                    await db.collection('users').doc(userId).update({ status: newStatus });
+                    return true;
+                } catch (error) {
+                    console.error('Error updating user status:', error);
+                    throw error;
+                }
+            },
+
+            // Products
+            getProducts: async () => {
+                try {
+                    const productsSnapshot = await db.collection('products').get();
+                    const productsList = productsSnapshot.docs.map(doc => ({
+                        id: doc.id,
+                        ...doc.data()
+                    }));
+                    return productsList;
+                } catch (error) {
+                    console.error('Error fetching products:', error);
+                    throw error;
+                }
+            },
+
+            saveProduct: async (productData) => {
+                try {
+                    if (productData.id && productData.id.startsWith('product-')) {
+                        // This is a new product that hasn't been saved to Firestore yet
+                        const { id, ...productWithoutId } = productData;
+                        const docRef = await db.collection('products').add(productWithoutId);
+                        return { id: docRef.id, ...productWithoutId };
+                    } else {
+                        // This is an existing product
+                        await db.collection('products').doc(productData.id).update(productData);
+                        return productData;
+                    }
+                } catch (error) {
+                    console.error('Error saving product:', error);
+                    throw error;
+                }
+            },
+
+            // Theme Settings
+            getThemeSettings: async () => {
+                try {
+                    const themeSnapshot = await db.collection('theme').get();
+                    
+                    if (themeSnapshot.empty) {
+                        // Return default theme if no theme settings exist
+                        return {
+                            colors: {
+                                primary: '#0c4a6e',
+                                secondary: '#075985',
+                                accent: '#0ea5e9',
+                                background: '#f8fafc',
+                                text: '#0f172a',
+                                sidebar: '#020617',
+                                sidebarText: '#f1f5f9'
+                            },
+                            typography: {
+                                fontFamily: 'Inter, sans-serif',
+                                fontSize: '16px'
+                            },
+                            layout: {
+                                sidebarWidth: '280px',
+                                borderRadius: '12px'
+                            }
+                        };
+                    }
+                    
+                    const themeDoc = themeSnapshot.docs[0];
+                    return {
+                        id: themeDoc.id,
+                        ...themeDoc.data()
+                    };
+                } catch (error) {
+                    console.error('Error fetching theme settings:', error);
+                    throw error;
+                }
+            },
+
+            saveThemeSettings: async (themeData) => {
+                try {
+                    const themeSnapshot = await db.collection('theme').get();
+                    
+                    if (themeSnapshot.empty) {
+                        // Create new theme document
+                        const docRef = await db.collection('theme').add(themeData);
+                        return { id: docRef.id, ...themeData };
+                    } else {
+                        // Update existing theme document
+                        await db.collection('theme').doc(themeSnapshot.docs[0].id).update(themeData);
+                        return themeData;
+                    }
+                } catch (error) {
+                    console.error('Error saving theme settings:', error);
+                    throw error;
+                }
+            }
+        };
+
+        // AI Service
+        const aiService = {
+            generatePageContent: async (pageTitle) => {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1500));
+                
+                // Mock AI-generated suggestions based on page title
+                const suggestions = [];
+                
+                if (pageTitle.toLowerCase().includes('home') || pageTitle.toLowerCase().includes('main')) {
+                    suggestions.push({
+                        type: 'hero',
+                        title: 'Welcome to RBM',
+                        content: 'Discover amazing products and deals on our platform. We offer the best quality at unbeatable prices.',
+                        image: 'https://via.placeholder.com/1200x600'
+                    });
+                    
+                    suggestions.push({
+                        type: 'features',
+                        title: 'Why Choose Us',
+                        features: [
+                            { title: 'Quality Products', description: 'We offer only the best products for our customers.' },
+                            { title: 'Fast Delivery', description: 'Get your orders delivered quickly and safely.' },
+                            { title: '24/7 Support', description: 'Our customer support team is always ready to help.' },
+                            { title: 'Secure Payments', description: 'All transactions are secure and encrypted.' }
+                        ]
+                    });
+                    
+                    suggestions.push({
+                        type: 'testimonials',
+                        title: 'What Our Customers Say',
+                        testimonials: [
+                            { name: 'John Doe', text: 'Best shopping experience ever!', rating: 5 },
+                            { name: 'Jane Smith', text: 'High quality products and fast delivery.', rating: 4 },
+                            { name: 'Mike Johnson', text: 'Great customer service and amazing deals.', rating: 5 }
+                        ]
+                    });
+                }
+                
+                if (pageTitle.toLowerCase().includes('sale') || pageTitle.toLowerCase().includes('offer')) {
+                    suggestions.push({
+                        type: 'hero',
+                        title: 'Special Offers',
+                        content: 'Check out our latest deals and discounts. Limited time only!',
+                        image: 'https://via.placeholder.com/1200x600'
+                    });
+                    
+                    suggestions.push({
+                        type: 'products',
+                        title: 'Featured Products',
+                        products: [
+                            { name: 'Product 1', price: '$19.99', originalPrice: '$29.99', discount: '33%' },
+                            { name: 'Product 2', price: '$24.99', originalPrice: '$39.99', discount: '37%' },
+                            { name: 'Product 3', price: '$14.99', originalPrice: '$24.99', discount: '40%' }
+                        ]
+                    });
+                    
+                    suggestions.push({
+                        type: 'countdown',
+                        title: 'Sale Ends In',
+                        endTime: '2023-12-31T23:59:59'
+                    });
+                }
+                
+                if (pageTitle.toLowerCase().includes('about') || pageTitle.toLowerCase().includes('company')) {
+                    suggestions.push({
+                        type: 'hero',
+                        title: 'About RBM',
+                        content: 'Learn more about our company, mission, and values.',
+                        image: 'https://via.placeholder.com/1200x600'
+                    });
+                    
+                    suggestions.push({
+                        type: 'text',
+                        title: 'Our Story',
+                        content: 'Founded in 2010, RBM has been providing quality products to customers worldwide. Our mission is to make shopping convenient, affordable, and enjoyable for everyone.'
+                    });
+                    
+                    suggestions.push({
+                        type: 'team',
+                        title: 'Meet Our Team',
+                        members: [
+                            { name: 'John Doe', position: 'CEO', bio: 'Founder and CEO with over 15 years of experience.' },
+                            { name: 'Jane Smith', position: 'CTO', bio: 'Technology expert driving innovation.' },
+                            { name: 'Mike Johnson', position: 'CFO', bio: 'Financial strategist ensuring growth.' }
+                        ]
+                    });
+                }
+                
+                // Default suggestions if no specific type is detected
+                if (suggestions.length === 0) {
+                    suggestions.push({
+                        type: 'hero',
+                        title: pageTitle,
+                        content: 'This is a new page. Edit this content to customize it.',
+                        image: 'https://via.placeholder.com/1200x600'
+                    });
+                    
+                    suggestions.push({
+                        type: 'text',
+                        title: 'Page Content',
+                        content: 'Add your content here. You can use the AI assistant to generate content suggestions.'
+                    });
+                }
+                
+                return suggestions;
+            },
+
+            generateDesignSuggestions: async (pageContent) => {
+                // Simulate API delay
+                await new Promise(resolve => setTimeout(resolve, 1000));
+                
+                // Mock AI-generated design suggestions
+                return [
+                    {
+                        type: 'layout',
+                        title: 'Modern Layout',
+                        description: 'Clean and modern layout with ample white space',
+                        preview: 'https://via.placeholder.com/300x200'
+                    },
+                    {
+                        type: 'color',
+                        title: 'Color Scheme',
+                        description: 'Professional blue and white color scheme',
+                        preview: 'https://via.placeholder.com/300x200'
+                    },
+                    {
+                        type: 'typography',
+                        title: 'Typography',
+                        description: 'Clean and readable font pairing',
+                        preview: 'https://via.placeholder.com/300x200'
+                    }
+                ];
+            }
+        };
+
+        // Contexts
+        const AuthContext = React.createContext();
+        const ThemeContext = React.createContext();
+
+        const AuthProvider = ({ children }) => {
+            const [currentUser, setCurrentUser] = React.useState(null);
+            const [loading, setLoading] = React.useState(true);
+
+            const signup = (email, password) => {
+                return auth.createUserWithEmailAndPassword(email, password);
+            };
+
+            const login = (email, password) => {
+                return auth.signInWithEmailAndPassword(email, password);
+            };
+
+            const logout = () => {
+                return auth.signOut();
+            };
+
+            const resetPassword = (email) => {
+                return auth.sendPasswordResetEmail(email);
+            };
+
+            React.useEffect(() => {
+                const unsubscribe = auth.onAuthStateChanged(user => {
+                    setCurrentUser(user);
+                    setLoading(false);
+                });
+
+                return unsubscribe;
+            }, []);
+
+            const value = {
+                currentUser,
+                signup,
+                login,
+                logout,
+                resetPassword
+            };
+
+            return (
+                <AuthContext.Provider value={value}>
+                    {!loading && children}
+                </AuthContext.Provider>
+            );
+        };
+
+        const ThemeProvider = ({ children }) => {
+            const [theme, setTheme] = React.useState({
+                colors: {
+                    primary: '#0c4a6e',
+                    secondary: '#075985',
+                    accent: '#0ea5e9',
+                    background: '#f8fafc',
+                    text: '#0f172a',
+                    sidebar: '#020617',
+                    sidebarText: '#f1f5f9'
+                },
+                typography: {
+                    fontFamily: 'Inter, sans-serif',
+                    fontSize: '16px'
+                },
+                layout: {
+                    sidebarWidth: '280px',
+                    borderRadius: '12px'
+                }
+            });
+
+            React.useEffect(() => {
+                const fetchTheme = async () => {
+                    try {
+                        const themeSettings = await dataService.getThemeSettings();
+                        setTheme(themeSettings);
+                    } catch (error) {
+                        console.error('Error fetching theme settings:', error);
+                    }
+                };
+
+                fetchTheme();
+            }, []);
+
+            const updateTheme = (newTheme) => {
+                setTheme(newTheme);
+            };
+
+            const value = {
+                theme,
+                updateTheme
+            };
+
+            return (
+                <ThemeContext.Provider value={value}>
+                    {children}
+                </ThemeContext.Provider>
+            );
+        };
+
+        // Components
+        const Sidebar = () => {
+            const [isCollapsed, setIsCollapsed] = React.useState(false);
+            const [mobileOpen, setMobileOpen] = React.useState(false);
+
+            const toggleSidebar = () => {
+                setIsCollapsed(!isCollapsed);
+            };
+
+            const toggleMobileSidebar = () => {
+                setMobileOpen(!mobileOpen);
+            };
+
+            const menuItems = [
+                { path: '/', icon: <i className="fas fa-home"></i>, label: 'Dashboard' },
+                { path: '/page-builder', icon: <i className="fas fa-palette"></i>, label: 'Page Builder' },
+                { path: '/users', icon: <i className="fas fa-users"></i>, label: 'Users' },
+                { path: '/products', icon: <i className="fas fa-box"></i>, label: 'Products' },
+                { path: '/theme', icon: <i className="fas fa-paint-brush"></i>, label: 'Theme' },
+                { path: '/settings', icon: <i className="fas fa-cog"></i>, label: 'Settings' },
+            ];
+
+            return (
+                <>
+                    <div className={`sidebar ${isCollapsed ? 'collapsed' : ''} ${mobileOpen ? 'mobile-open' : ''}`}>
+                        <div className="sidebar-header">
+                            {!isCollapsed && <div className="logo">
+                                <i className="fas fa-cube"></i>
+                                <span>RBM</span>
+                            </div>}
+                            <button className="toggle-btn" onClick={toggleSidebar}>
+                                {isCollapsed ? <i className="fas fa-bars"></i> : <i className="fas fa-times"></i>}
+                            </button>
+                        </div>
+                        <nav className="sidebar-nav">
+                            <ul>
+                                {menuItems.map((item) => (
+                                    <li key={item.path}>
+                                        <ReactRouterDOM.NavLink 
+                                            to={item.path} 
+                                            className={({ isActive }) => isActive ? 'active' : ''}
+                                            onClick={() => setMobileOpen(false)}
+                                        >
+                                            <span className="icon">{item.icon}</span>
+                                            {!isCollapsed && <span className="label">{item.label}</span>}
+                                        </ReactRouterDOM.NavLink>
+                                    </li>
+                                ))}
+                            </ul>
+                        </nav>
+                        <div className="sidebar-footer">
+                            <button className="ai-assistant-btn">
+                                <i className="fas fa-robot"></i>
+                                {!isCollapsed && <span>AI Assistant</span>}
+                            </button>
+                        </div>
+                    </div>
+                    <button className="mobile-menu-btn" onClick={toggleMobileSidebar}>
+                        <i className="fas fa-bars"></i>
+                    </button>
+                </>
+            );
+        };
+
+        const Topbar = () => {
+            const { currentUser, logout } = React.useContext(AuthContext);
+            
+            const handleLogout = () => {
+                logout();
+            };
+
+            return (
+                <div className="topbar">
+                    <div className="topbar-left">
+                        <div className="search-bar">
+                            <i className="fas fa-search"></i>
+                            <input type="text" placeholder="Search..." />
+                        </div>
+                    </div>
+                    <div className="topbar-right">
+                        <button className="notification-btn">
+                            <i className="fas fa-bell"></i>
+                            <span className="notification-badge">3</span>
+                        </button>
+                        <div className="user-menu">
+                            <div className="user-avatar">
+                                {currentUser?.email?.charAt(0).toUpperCase()}
+                            </div>
+                            <div className="user-info">
+                                <h3>Admin User</h3>
+                                <p>{currentUser?.email}</p>
+                            </div>
+                        </div>
+                        <button className="btn btn-outline btn-sm" onClick={handleLogout}>
+                            <i className="fas fa-sign-out-alt"></i>
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const StatsCard = ({ title, value, icon, color, change }) => {
+            return (
+                <div className="stat-card fade-in">
+                    <div className="stat-header">
+                        <div className="stat-title">{title}</div>
+                        <div className={`stat-icon ${color}`}>
+                            {icon}
+                        </div>
+                    </div>
+                    <div className="stat-value">{value}</div>
+                    <div className={`stat-change ${change >= 0 ? 'positive' : 'negative'}`}>
+                        <i className={`fas fa-arrow-${change >= 0 ? 'up' : 'down'}`}></i>
+                        <span>{Math.abs(change)}%</span>
+                        <span>from last month</span>
+                    </div>
+                </div>
+            );
+        };
+
+        const Chart = ({ type, data }) => {
+            const chartRef = React.useRef(null);
+            const [chartInstance, setChartInstance] = React.useState(null);
+
+            React.useEffect(() => {
+                if (chartRef.current) {
+                    const ctx = chartRef.current.getContext('2d');
+                    
+                    // Destroy previous chart instance if exists
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+
+                    let newChart;
+                    
+                    if (type === 'line') {
+                        newChart = new Chart(ctx, {
+                            type: 'line',
+                            data: data || {
+                                labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun'],
+                                datasets: [{
+                                    label: 'Sales',
+                                    data: [12, 19, 3, 5, 2, 3],
+                                    borderColor: '#0ea5e9',
+                                    backgroundColor: 'rgba(14, 165, 233, 0.1)',
+                                    tension: 0.4,
+                                    fill: true
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                },
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        grid: {
+                                            color: 'rgba(0, 0, 0, 0.05)'
+                                        }
+                                    },
+                                    x: {
+                                        grid: {
+                                            display: false
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    } else if (type === 'doughnut') {
+                        newChart = new Chart(ctx, {
+                            type: 'doughnut',
+                            data: data || {
+                                labels: ['Electronics', 'Clothing', 'Home', 'Beauty'],
+                                datasets: [{
+                                    data: [30, 25, 20, 25],
+                                    backgroundColor: [
+                                        '#0ea5e9',
+                                        '#10b981',
+                                        '#f59e0b',
+                                        '#8b5cf6'
+                                    ],
+                                    borderWidth: 0
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                plugins: {
+                                    legend: {
+                                        position: 'right',
+                                        labels: {
+                                            boxWidth: 15,
+                                            padding: 15
+                                        }
+                                    }
+                                },
+                                cutout: '70%'
+                            }
+                        });
+                    }
+                    
+                    setChartInstance(newChart);
+                }
+
+                return () => {
+                    if (chartInstance) {
+                        chartInstance.destroy();
+                    }
+                };
+            }, [type, data]);
+
+            return (
+                <div className="chart-container">
+                    <canvas ref={chartRef}></canvas>
+                </div>
+            );
+        };
+
+        const Dashboard = () => {
+            const [stats, setStats] = React.useState({
+                users: 0,
+                products: 0,
+                orders: 0,
+                revenue: 0,
+                userGrowth: 0,
+                productGrowth: 0,
+                orderGrowth: 0,
+                revenueGrowth: 0
+            });
+            const [loading, setLoading] = React.useState(true);
+            const [activeChart, setActiveChart] = React.useState('sales');
+
+            React.useEffect(() => {
+                const fetchStats = async () => {
+                    try {
+                        const data = await dataService.getDashboardStats();
+                        setStats(data);
+                    } catch (error) {
+                        console.error('Error fetching dashboard stats:', error);
+                    } finally {
+                        setLoading(false);
+                    }
+                };
+
+                fetchStats();
+            }, []);
+
+            if (loading) {
+                return <div className="loading">Loading dashboard...</div>;
+            }
+
+            return (
+                <div className="dashboard">
+                    <div className="dashboard-header">
+                        <div>
+                            <h1 className="dashboard-title">Dashboard</h1>
+                            <p className="dashboard-subtitle">Welcome back! Here's what's happening today.</p>
+                        </div>
+                        <div className="dashboard-actions">
+                            <div className="date-filter">
+                                <i className="fas fa-calendar-alt"></i>
+                                <span>Last 30 days</span>
+                                <i className="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div className="stats-grid">
+                        <StatsCard 
+                            title="Total Users" 
+                            value={stats.users.toLocaleString()} 
+                            icon={<i className="fas fa-users"></i>} 
+                            color="blue" 
+                            change={stats.userGrowth}
+                        />
+                        <StatsCard 
+                            title="Total Products" 
+                            value={stats.products.toLocaleString()} 
+                            icon={<i className="fas fa-box"></i>} 
+                            color="green" 
+                            change={stats.productGrowth}
+                        />
+                        <StatsCard 
+                            title="Total Orders" 
+                            value={stats.orders.toLocaleString()} 
+                            icon={<i className="fas fa-shopping-cart"></i>} 
+                            color="purple" 
+                            change={stats.orderGrowth}
+                        />
+                        <StatsCard 
+                            title="Revenue" 
+                            value={`$${stats.revenue.toLocaleString()}`} 
+                            icon={<i className="fas fa-dollar-sign"></i>} 
+                            color="orange" 
+                            change={stats.revenueGrowth}
+                        />
+                    </div>
+
+                    <div className="charts-container">
+                        <div className="chart-card">
+                            <div className="chart-header">
+                                <div className="chart-title">Sales Overview</div>
+                                <div className="chart-options">
+                                    <button 
+                                        className={`chart-option ${activeChart === 'sales' ? 'active' : ''}`}
+                                        onClick={() => setActiveChart('sales')}
+                                    >
+                                        Sales
+                                    </button>
+                                    <button 
+                                        className={`chart-option ${activeChart === 'revenue' ? 'active' : ''}`}
+                                        onClick={() => setActiveChart('revenue')}
+                                    >
+                                        Revenue
+                                    </button>
+                                    <button 
+                                        className={`chart-option ${activeChart === 'orders' ? 'active' : ''}`}
+                                        onClick={() => setActiveChart('orders')}
+                                    >
+                                        Orders
+                                    </button>
+                                </div>
+                            </div>
+                            <Chart type="line" />
+                        </div>
+                        <div className="chart-card">
+                            <div className="chart-header">
+                                <div className="chart-title">Product Categories</div>
+                            </div>
+                            <Chart type="doughnut" />
+                        </div>
+                    </div>
+
+                    <div className="activity-feed">
+                        <div className="activity-header">
+                            <div className="activity-title">Recent Activity</div>
+                            <button className="btn btn-outline btn-sm">View All</button>
+                        </div>
+                        <div className="activity-list">
+                            <div className="activity-item">
+                                <div className="activity-icon user">
+                                    <i className="fas fa-user"></i>
+                                </div>
+                                <div className="activity-content">
+                                    <div className="activity-text">
+                                        <strong>John Doe</strong> registered as a new seller
+                                    </div>
+                                    <div className="activity-time">2 minutes ago</div>
+                                </div>
+                            </div>
+                            <div className="activity-item">
+                                <div className="activity-icon product">
+                                    <i className="fas fa-box"></i>
+                                </div>
+                                <div className="activity-content">
+                                    <div className="activity-text">
+                                        <strong>Product #1234</strong> was added to the catalog
+                                    </div>
+                                    <div className="activity-time">15 minutes ago</div>
+                                </div>
+                            </div>
+                            <div className="activity-item">
+                                <div className="activity-icon order">
+                                    <i className="fas fa-shopping-cart"></i>
+                                </div>
+                                <div className="activity-content">
+                                    <div className="activity-text">
+                                        New order <strong>#5678</strong> was placed
+                                    </div>
+                                    <div className="activity-time">1 hour ago</div>
+                                </div>
+                            </div>
+                            <div className="activity-item">
+                                <div className="activity-icon user">
+                                    <i className="fas fa-user"></i>
+                                </div>
+                                <div className="activity-content">
+                                    <div className="activity-text">
+                                        <strong>Jane Smith</strong> updated her profile
+                                    </div>
+                                    <div className="activity-time">3 hours ago</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const PageEditor = ({ page, onSave, onCancel }) => {
+            const [pageTitle, setPageTitle] = React.useState(page.title);
+            const [sections, setSections] = React.useState(page.sections || []);
+            const [activeTab, setActiveTab] = React.useState('content');
+
+            const handleAddSection = (type) => {
+                const newSection = {
+                    id: `section-${Date.now()}`,
+                    type,
+                    title: `New ${type.charAt(0).toUpperCase() + type.slice(1)} Section`,
+                    content: 'Edit this content'
+                };
+
+                if (type === 'features') {
+                    newSection.features = [
+                        { title: 'Feature 1', description: 'Description for feature 1' },
+                        { title: 'Feature 2', description: 'Description for feature 2' },
+                        { title: 'Feature 3', description: 'Description for feature 3' }
+                    ];
+                }
+
+                if (type === 'testimonials') {
+                    newSection.testimonials = [
+                        { name: 'John Doe', text: 'Great product!', rating: 5 },
+                        { name: 'Jane Smith', text: 'Highly recommended!', rating: 4 }
+                    ];
+                }
+
+                if (type === 'products') {
+                    newSection.products = [
+                        { name: 'Product 1', price: '$19.99', description: 'Description for product 1' },
+                        { name: 'Product 2', price: '$24.99', description: 'Description for product 2' }
+                    ];
+                }
+
+                setSections([...sections, newSection]);
+            };
+
+            const handleSectionChange = (sectionId, field, value) => {
+                setSections(sections.map(section => 
+                    section.id === sectionId ? { ...section, [field]: value } : section
+                ));
+            };
+
+            const handleFeatureChange = (sectionId, featureIndex, field, value) => {
+                setSections(sections.map(section => {
+                    if (section.id === sectionId) {
+                        const updatedFeatures = [...section.features];
+                        updatedFeatures[featureIndex] = {
+                            ...updatedFeatures[featureIndex],
+                            [field]: value
+                        };
+                        return { ...section, features: updatedFeatures };
+                    }
+                    return section;
+                }));
+            };
+
+            const handleTestimonialChange = (sectionId, testimonialIndex, field, value) => {
+                setSections(sections.map(section => {
+                    if (section.id === sectionId) {
+                        const updatedTestimonials = [...section.testimonials];
+                        updatedTestimonials[testimonialIndex] = {
+                            ...updatedTestimonials[testimonialIndex],
+                            [field]: value
+                        };
+                        return { ...section, testimonials: updatedTestimonials };
+                    }
+                    return section;
+                }));
+            };
+
+            const handleProductChange = (sectionId, productIndex, field, value) => {
+                setSections(sections.map(section => {
+                    if (section.id === sectionId) {
+                        const updatedProducts = [...section.products];
+                        updatedProducts[productIndex] = {
+                            ...updatedProducts[productIndex],
+                            [field]: value
+                        };
+                        return { ...section, products: updatedProducts };
+                    }
+                    return section;
+                }));
+            };
+
+            const handleRemoveSection = (sectionId) => {
+                setSections(sections.filter(section => section.id !== sectionId));
+            };
+
+            const handleSave = () => {
+                const updatedPage = {
+                    ...page,
+                    title: pageTitle,
+                    sections
+                };
+                onSave(updatedPage);
+            };
+
+            return (
+                <div className="page-editor">
+                    <div className="page-editor-header">
+                        <div className="page-title-editor">
+                            <input 
+                                type="text" 
+                                className="page-title-input" 
+                                value={pageTitle} 
+                                onChange={(e) => setPageTitle(e.target.value)} 
+                            />
+                        </div>
+                        <div className="page-actions">
+                            <button className="btn btn-outline" onClick={onCancel}>
+                                <i className="fas fa-times"></i> Cancel
+                            </button>
+                            <button className="btn btn-primary" onClick={handleSave}>
+                                <i className="fas fa-save"></i> Save Page
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="page-tabs">
+                        <div className={`page-tab ${activeTab === 'content' ? 'active' : ''}`} onClick={() => setActiveTab('content')}>
+                            Content
+                        </div>
+                        <div className={`page-tab ${activeTab === 'design' ? 'active' : ''}`} onClick={() => setActiveTab('design')}>
+                            Design
+                        </div>
+                        <div className={`page-tab ${activeTab === 'settings' ? 'active' : ''}`} onClick={() => setActiveTab('settings')}>
+                            Settings
+                        </div>
+                    </div>
+
+                    <div className="page-content">
+                        {activeTab === 'content' && (
+                            <div className="page-sections">
+                                {sections.length === 0 ? (
+                                    <div className="text-center p-4">
+                                        <p>No sections added yet. Add sections below.</p>
+                                    </div>
+                                ) : (
+                                    sections.map((section) => (
+                                        <div key={section.id} className="page-section">
+                                            <div className="section-header">
+                                                <div className="section-title">{section.type.charAt(0).toUpperCase() + section.type.slice(1)} Section</div>
+                                                <div className="section-actions">
+                                                    <button className="section-btn">
+                                                        <i className="fas fa-arrows-alt"></i>
+                                                    </button>
+                                                    <button className="section-btn" onClick={() => handleRemoveSection(section.id)}>
+                                                        <i className="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            
+                                            <div className="form-group">
+                                                <label>Section Title</label>
+                                                <input 
+                                                    type="text" 
+                                                    value={section.title} 
+                                                    onChange={(e) => handleSectionChange(section.id, 'title', e.target.value)} 
+                                                />
+                                            </div>
+                                            
+                                            {section.type === 'hero' && (
+                                                <div className="form-group">
+                                                    <label>Content</label>
+                                                    <textarea 
+                                                        value={section.content} 
+                                                        onChange={(e) => handleSectionChange(section.id, 'content', e.target.value)}
+                                                        rows={3}
+                                                    ></textarea>
+                                                </div>
+                                            )}
+                                            
+                                            {section.type === 'text' && (
+                                                <div className="form-group">
+                                                    <label>Content</label>
+                                                    <textarea 
+                                                        value={section.content} 
+                                                        onChange={(e) => handleSectionChange(section.id, 'content', e.target.value)}
+                                                        rows={5}
+                                                    ></textarea>
+                                                </div>
+                                            )}
+                                            
+                                            {section.type === 'features' && (
+                                                <div className="features-editor">
+                                                    <h5>Features</h5>
+                                                    {section.features.map((feature, index) => (
+                                                        <div key={index} className="feature-editor">
+                                                            <div className="form-group">
+                                                                <label>Feature Title</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={feature.title} 
+                                                                    onChange={(e) => handleFeatureChange(section.id, index, 'title', e.target.value)} 
+                                                                />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label>Feature Description</label>
+                                                                <textarea 
+                                                                    value={feature.description} 
+                                                                    onChange={(e) => handleFeatureChange(section.id, index, 'description', e.target.value)}
+                                                                    rows={2}
+                                                                ></textarea>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            
+                                            {section.type === 'testimonials' && (
+                                                <div className="testimonials-editor">
+                                                    <h5>Testimonials</h5>
+                                                    {section.testimonials.map((testimonial, index) => (
+                                                        <div key={index} className="testimonial-editor">
+                                                            <div className="form-group">
+                                                                <label>Customer Name</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={testimonial.name} 
+                                                                    onChange={(e) => handleTestimonialChange(section.id, index, 'name', e.target.value)} 
+                                                                />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label>Testimonial</label>
+                                                                <textarea 
+                                                                    value={testimonial.text} 
+                                                                    onChange={(e) => handleTestimonialChange(section.id, index, 'text', e.target.value)}
+                                                                    rows={2}
+                                                                ></textarea>
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label>Rating</label>
+                                                                <select 
+                                                                    value={testimonial.rating} 
+                                                                    onChange={(e) => handleTestimonialChange(section.id, index, 'rating', parseInt(e.target.value))}
+                                                                >
+                                                                    <option value={1}>1 Star</option>
+                                                                    <option value={2}>2 Stars</option>
+                                                                    <option value={3}>3 Stars</option>
+                                                                    <option value={4}>4 Stars</option>
+                                                                    <option value={5}>5 Stars</option>
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                            
+                                            {section.type === 'products' && (
+                                                <div className="products-editor">
+                                                    <h5>Products</h5>
+                                                    {section.products.map((product, index) => (
+                                                        <div key={index} className="product-editor">
+                                                            <div className="form-group">
+                                                                <label>Product Name</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={product.name} 
+                                                                    onChange={(e) => handleProductChange(section.id, index, 'name', e.target.value)} 
+                                                                />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label>Price</label>
+                                                                <input 
+                                                                    type="text" 
+                                                                    value={product.price} 
+                                                                    onChange={(e) => handleProductChange(section.id, index, 'price', e.target.value)} 
+                                                                />
+                                                            </div>
+                                                            <div className="form-group">
+                                                                <label>Description</label>
+                                                                <textarea 
+                                                                    value={product.description} 
+                                                                    onChange={(e) => handleProductChange(section.id, index, 'description', e.target.value)}
+                                                                    rows={2}
+                                                                ></textarea>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            )}
+                                        </div>
+                                    ))
+                                )}
+                                
+                                <button className="add-section-btn" onClick={() => handleAddSection('hero')}>
+                                    <i className="fas fa-plus"></i> Add Hero Section
+                                </button>
+                                <button className="add-section-btn" onClick={() => handleAddSection('text')}>
+                                    <i className="fas fa-plus"></i> Add Text Section
+                                </button>
+                                <button className="add-section-btn" onClick={() => handleAddSection('features')}>
+                                    <i className="fas fa-plus"></i> Add Features Section
+                                </button>
+                                <button className="add-section-btn" onClick={() => handleAddSection('testimonials')}>
+                                    <i className="fas fa-plus"></i> Add Testimonials Section
+                                </button>
+                                <button className="add-section-btn" onClick={() => handleAddSection('products')}>
+                                    <i className="fas fa-plus"></i> Add Products Section
+                                </button>
+                            </div>
+                        )}
+                        
+                        {activeTab === 'design' && (
+                            <div className="design-settings">
+                                <h3>Design Settings</h3>
+                                <div className="form-group">
+                                    <label>Background Color</label>
+                                    <input type="color" defaultValue="#ffffff" />
+                                </div>
+                                <div className="form-group">
+                                    <label>Text Color</label>
+                                    <input type="color" defaultValue="#000000" />
+                                </div>
+                                <div className="form-group">
+                                    <label>Section Padding</label>
+                                    <input type="range" min="0" max="100" defaultValue="20" />
+                                </div>
+                            </div>
+                        )}
+                        
+                        {activeTab === 'settings' && (
+                            <div className="page-settings">
+                                <h3>Page Settings</h3>
+                                <div className="form-group">
+                                    <label>Page URL Slug</label>
+                                    <input type="text" defaultValue={page.slug} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Meta Title</label>
+                                    <input type="text" defaultValue={page.title} />
+                                </div>
+                                <div className="form-group">
+                                    <label>Meta Description</label>
+                                    <textarea rows={3} defaultValue="This is the meta description for the page."></textarea>
+                                </div>
+                                <div className="form-group">
+                                    <label>
+                                        <input type="checkbox" defaultChecked /> Show in navigation menu
+                                    </label>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const Preview = ({ page, onClose }) => {
+            return (
+                <div className="preview-modal">
+                    <div className="preview-content">
+                        <div className="preview-header">
+                            <div className="preview-title">Preview: {page.title}</div>
+                            <div className="preview-actions">
+                                <button className="btn btn-outline btn-sm">
+                                    <i className="fas fa-mobile-alt"></i> Mobile View
+                                </button>
+                                <button className="btn btn-outline btn-sm">
+                                    <i className="fas fa-tablet-alt"></i> Tablet View
+                                </button>
+                                <button className="btn btn-primary btn-sm" onClick={onClose}>
+                                    <i className="fas fa-times"></i> Close
+                                </button>
+                            </div>
+                        </div>
+                        <div className="preview-body">
+                            <div className="preview-website">
+                                {/* Navigation Bar */}
+                                <nav className="preview-navbar">
+                                    <div className="preview-logo">RBM</div>
+                                    <div className="preview-nav-links">
+                                        <a href="#">Home</a>
+                                        <a href="#">About</a>
+                                        <a href="#">Products</a>
+                                        <a href="#">Contact</a>
+                                    </div>
+                                </nav>
+
+                                {/* Page Content */}
+                                <div>
+                                    {page.sections.length > 0 ? (
+                                        page.sections.map((section, index) => (
+                                            <div key={index}>
+                                                {section.type === 'hero' && (
+                                                    <section className="preview-hero">
+                                                        <h1>{section.title}</h1>
+                                                        <p>{section.content}</p>
+                                                        <a href="#" className="preview-cta">Learn More</a>
+                                                    </section>
+                                                )}
+                                                
+                                                {section.type === 'text' && (
+                                                    <section className="preview-section">
+                                                        <h2>{section.title}</h2>
+                                                        <p>{section.content}</p>
+                                                    </section>
+                                                )}
+                                                
+                                                {section.type === 'features' && (
+                                                    <section className="preview-section">
+                                                        <h2>{section.title}</h2>
+                                                        <div className="preview-features">
+                                                            {section.features.map((feature, idx) => (
+                                                                <div key={idx} className="preview-feature">
+                                                                    <h3>{feature.title}</h3>
+                                                                    <p>{feature.description}</p>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </section>
+                                                )}
+                                                
+                                                {section.type === 'testimonials' && (
+                                                    <section className="preview-testimonials">
+                                                        <h2>{section.title}</h2>
+                                                        <div className="preview-testimonial-grid">
+                                                            {section.testimonials.map((testimonial, idx) => (
+                                                                <div key={idx} className="preview-testimonial">
+                                                                    <p>"{testimonial.text}"</p>
+                                                                    <div className="preview-testimonial-author">- {testimonial.name}</div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </section>
+                                                )}
+                                                
+                                                {section.type === 'products' && (
+                                                    <section className="preview-products">
+                                                        <h2>{section.title}</h2>
+                                                        <div className="preview-product-grid">
+                                                            {section.products.map((product, idx) => (
+                                                                <div key={idx} className="preview-product">
+                                                                    <img src="https://via.placeholder.com/250x200" alt={product.name} />
+                                                                    <div className="preview-product-info">
+                                                                        <h3>{product.name}</h3>
+                                                                        <div className="preview-product-price">{product.price}</div>
+                                                                        <a href="#" className="preview-product-btn">Add to Cart</a>
+                                                                    </div>
+                                                                </div>
+                                                            ))}
+                                                        </div>
+                                                    </section>
+                                                )}
+                                            </div>
+                                        ))
+                                    ) : (
+                                        <div className="preview-section">
+                                            <h2>{page.title}</h2>
+                                            <p>No content added yet. Click "Edit Page" to add content.</p>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* Footer */}
+                                <footer className="preview-footer">
+                                    <h3>RBM</h3>
+                                    <p>Your trusted partner for quality products</p>
+                                    <div className="preview-social-links">
+                                        <a href="#"><i className="fab fa-facebook-f"></i></a>
+                                        <a href="#"><i className="fab fa-twitter"></i></a>
+                                        <a href="#"><i className="fab fa-instagram"></i></a>
+                                        <a href="#"><i className="fab fa-linkedin-in"></i></a>
+                                    </div>
+                                    <p>&copy; 2023 RBM. All rights reserved.</p>
+                                </footer>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const AIAssistant = ({ suggestions, onApplySuggestion, onClose }) => {
+            const [messages, setMessages] = React.useState([
+                {
+                    id: 1,
+                    text: "Hello! I'm your AI assistant. I can help you create and design pages. What would you like to do?",
+                    sender: 'ai',
+                    time: new Date()
+                }
+            ]);
+            const [inputValue, setInputValue] = React.useState('');
+            const [isMinimized, setIsMinimized] = React.useState(false);
+
+            const handleSendMessage = () => {
+                if (inputValue.trim() === '') return;
+                
+                const newMessage = {
+                    id: messages.length + 1,
+                    text: inputValue,
+                    sender: 'user',
+                    time: new Date()
+                };
+                
+                setMessages([...messages, newMessage]);
+                setInputValue('');
+                
+                // Simulate AI response
+                setTimeout(() => {
+                    const aiResponse = {
+                        id: messages.length + 2,
+                        text: "I understand you want to " + inputValue + ". Here are some suggestions:",
+                        sender: 'ai',
+                        time: new Date()
+                    };
+                    setMessages(prev => [...prev, aiResponse]);
+                }, 1000);
+            };
+
+            const handleKeyPress = (e) => {
+                if (e.key === 'Enter') {
+                    handleSendMessage();
+                }
+            };
+
+            return (
+                <div className={`ai-assistant ${isMinimized ? 'minimized' : ''}`}>
+                    <div className="ai-assistant-header">
+                        <div className="ai-assistant-title">
+                            <i className="fas fa-robot"></i>
+                            <span>AI Assistant</span>
+                        </div>
+                        <div className="ai-assistant-controls">
+                            <button className="ai-control-btn" onClick={() => setIsMinimized(!isMinimized)}>
+                                <i className={`fas fa-${isMinimized ? 'expand' : 'minus'}`}></i>
+                            </button>
+                            <button className="ai-control-btn" onClick={onClose}>
+                                <i className="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    {!isMinimized && (
+                        <>
+                            <div className="ai-assistant-body">
+                                <div className="ai-messages">
+                                    {messages.map(message => (
+                                        <div key={message.id} className="ai-message">
+                                            <div className="ai-message-header">
+                                                <div className="ai-avatar">
+                                                    <i className="fas fa-robot"></i>
+                                                </div>
+                                                <div className="ai-message-info">
+                                                    <div className="ai-message-title">
+                                                        {message.sender === 'ai' ? 'AI Assistant' : 'You'}
+                                                    </div>
+                                                    <div className="ai-message-time">
+                                                        {message.time.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div className="ai-message-content">
+                                                {message.text}
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                
+                                {suggestions && suggestions.length > 0 && (
+                                    <div className="ai-suggestions">
+                                        <div className="ai-suggestions-title">AI Suggestions</div>
+                                        <div className="suggestion-list">
+                                            {suggestions.map((suggestion, index) => (
+                                                <div key={index} className="suggestion-item" onClick={() => onApplySuggestion(suggestion)}>
+                                                    <div className="suggestion-title">{suggestion.title}</div>
+                                                    <div className="suggestion-description">{suggestion.description || suggestion.content}</div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                                
+                                <div className="ai-input">
+                                    <input 
+                                        type="text" 
+                                        placeholder="Ask me anything..." 
+                                        value={inputValue}
+                                        onChange={(e) => setInputValue(e.target.value)}
+                                        onKeyPress={handleKeyPress}
+                                    />
+                                    <button className="ai-send-btn" onClick={handleSendMessage}>
+                                        <i className="fas fa-paper-plane"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </>
+                    )}
+                </div>
+            );
+        };
+
+        const PageBuilder = () => {
+            const [pages, setPages] = React.useState([
+                {
+                    id: 'page-1',
+                    title: 'Home',
+                    slug: 'home',
+                    sections: [
+                        {
+                            type: 'hero',
+                            title: 'Welcome to RBM',
+                            content: 'Discover amazing products and deals on our platform.',
+                            image: 'https://via.placeholder.com/1200x600'
+                        },
+                        {
+                            type: 'features',
+                            title: 'Why Choose Us',
+                            features: [
+                                { title: 'Quality Products', description: 'We offer only the best products for our customers.' },
+                                { title: 'Fast Delivery', description: 'Get your orders delivered quickly and safely.' },
+                                { title: '24/7 Support', description: 'Our customer support team is always ready to help.' }
+                            ]
+                        }
+                    ],
+                    createdAt: new Date()
+                },
+                {
+                    id: 'page-2',
+                    title: 'About Us',
+                    slug: 'about',
+                    sections: [
+                        {
+                            type: 'text',
+                            title: 'Our Story',
+                            content: 'Founded in 2010, RBM has been providing quality products to customers worldwide.'
+                        }
+                    ],
+                    createdAt: new Date()
+                }
+            ]);
+            const [selectedPage, setSelectedPage] = React.useState(null);
+            const [isEditing, setIsEditing] = React.useState(false);
+            const [aiSuggestions, setAiSuggestions] = React.useState(null);
+            const [showPreview, setShowPreview] = React.useState(false);
+            const [searchTerm, setSearchTerm] = React.useState('');
+
+            React.useEffect(() => {
+                if (pages.length > 0 && !selectedPage) {
+                    setSelectedPage(pages[0]);
+                }
+            }, [pages, selectedPage]);
+
+            const handleCreateNewPage = async () => {
+                const newPage = {
+                    id: `page-${Date.now()}`,
+                    title: 'New Page',
+                    slug: 'new-page',
+                    sections: [],
+                    createdAt: new Date()
+                };
+                
+                setPages([...pages, newPage]);
+                setSelectedPage(newPage);
+                setIsEditing(true);
+                
+                // Generate AI suggestions for the new page
+                try {
+                    const suggestions = await aiService.generatePageContent('New Page');
+                    setAiSuggestions(suggestions);
+                } catch (error) {
+                    console.error('Error generating AI suggestions:', error);
+                }
+            };
+
+            const handleSavePage = async (pageData) => {
+                try {
+                    await dataService.savePage(pageData);
+                    setPages(pages.map(p => p.id === pageData.id ? pageData : p));
+                    setSelectedPage(pageData);
+                    setIsEditing(false);
+                } catch (error) {
+                    console.error('Error saving page:', error);
+                }
+            };
+
+            const handleDeletePage = async (pageId) => {
+                if (window.confirm('Are you sure you want to delete this page?')) {
+                    try {
+                        await dataService.deletePage(pageId);
+                        setPages(pages.filter(p => p.id !== pageId));
+                        if (selectedPage && selectedPage.id === pageId) {
+                            setSelectedPage(pages.length > 0 ? pages[0] : null);
+                        }
+                    } catch (error) {
+                        console.error('Error deleting page:', error);
+                    }
+                }
+            };
+
+            const handleApplyAISuggestion = (suggestion) => {
+                if (selectedPage) {
+                    const updatedPage = {
+                        ...selectedPage,
+                        sections: [...selectedPage.sections, suggestion]
+                    };
+                    setSelectedPage(updatedPage);
+                }
+            };
+
+            const filteredPages = pages.filter(page => 
+                page.title.toLowerCase().includes(searchTerm.toLowerCase())
+            );
+
+            return (
+                <div className="page-builder">
+                    <div className="page-builder-header">
+                        <h1>Page Builder</h1>
+                        <button className="btn btn-primary" onClick={handleCreateNewPage}>
+                            <i className="fas fa-plus"></i> Create New Page
+                        </button>
+                    </div>
+
+                    <div className="page-builder-content">
+                        <div className="pages-list">
+                            <div className="pages-header">
+                                <div className="pages-title">Pages</div>
+                                <button className="add-page-btn" onClick={handleCreateNewPage}>
+                                    <i className="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div className="pages-search">
+                                <input 
+                                    type="text" 
+                                    placeholder="Search pages..." 
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                />
+                            </div>
+                            <ul>
+                                {filteredPages.map(page => (
+                                    <li 
+                                        key={page.id} 
+                                        className={selectedPage?.id === page.id ? 'active' : ''}
+                                        onClick={() => {
+                                            setSelectedPage(page);
+                                            setIsEditing(false);
+                                        }}
+                                    >
+                                        <div className="page-info">
+                                            <div className="page-icon">
+                                                <i className="fas fa-file-alt"></i>
+                                            </div>
+                                            <div className="page-name">{page.title}</div>
+                                        </div>
+                                        <div className="page-menu" onClick={(e) => {
+                                            e.stopPropagation();
+                                            handleDeletePage(page.id);
+                                        }}>
+                                            <i className="fas fa-trash"></i>
+                                        </div>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+
+                        <div className="page-editor-container">
+                            {selectedPage ? (
+                                <>
+                                    {isEditing ? (
+                                        <PageEditor 
+                                            page={selectedPage} 
+                                            onSave={handleSavePage} 
+                                            onCancel={() => setIsEditing(false)}
+                                        />
+                                    ) : (
+                                        <div className="page-view">
+                                            <div className="page-editor-header">
+                                                <div className="page-title-editor">
+                                                    <div className="page-title-input">{selectedPage.title}</div>
+                                                </div>
+                                                <div className="page-actions">
+                                                    <button 
+                                                        className="btn btn-secondary" 
+                                                        onClick={() => setIsEditing(true)}
+                                                    >
+                                                        <i className="fas fa-edit"></i> Edit Page
+                                                    </button>
+                                                    <button 
+                                                        className="btn btn-outline" 
+                                                        onClick={() => setShowPreview(true)}
+                                                    >
+                                                        <i className="fas fa-eye"></i> Preview
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div className="page-content">
+                                                <h2>{selectedPage.title}</h2>
+                                                {selectedPage.sections.length > 0 ? (
+                                                    selectedPage.sections.map((section, index) => (
+                                                        <div key={index} className="page-section">
+                                                            {section.type === 'hero' && (
+                                                                <div className="hero-section">
+                                                                    <h3>{section.title}</h3>
+                                                                    <p>{section.content}</p>
+                                                                </div>
+                                                            )}
+                                                            {section.type === 'text' && (
+                                                                <div className="text-section">
+                                                                    <h3>{section.title}</h3>
+                                                                    <p>{section.content}</p>
+                                                                </div>
+                                                            )}
+                                                            {section.type === 'features' && (
+                                                                <div className="features-section">
+                                                                    <h3>{section.title}</h3>
+                                                                    <div className="features-grid">
+                                                                        {section.features.map((feature, idx) => (
+                                                                            <div key={idx} className="feature-card">
+                                                                                <h4>{feature.title}</h4>
+                                                                                <p>{feature.description}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {section.type === 'testimonials' && (
+                                                                <div className="testimonials-section">
+                                                                    <h3>{section.title}</h3>
+                                                                    <div className="testimonials-grid">
+                                                                        {section.testimonials.map((testimonial, idx) => (
+                                                                            <div key={idx} className="testimonial-card">
+                                                                                <div className="testimonial-rating">
+                                                                                    {'★'.repeat(testimonial.rating)}{'☆'.repeat(5 - testimonial.rating)}
+                                                                                </div>
+                                                                                <p>"{testimonial.text}"</p>
+                                                                                <div className="testimonial-author">- {testimonial.name}</div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                            {section.type === 'products' && (
+                                                                <div className="products-section">
+                                                                    <h3>{section.title}</h3>
+                                                                    <div className="products-grid">
+                                                                        {section.products.map((product, idx) => (
+                                                                            <div key={idx} className="product-card">
+                                                                                <h4>{product.name}</h4>
+                                                                                <div className="product-price">{product.price}</div>
+                                                                                <p>{product.description}</p>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))
+                                                ) : (
+                                                    <div className="text-center p-4">
+                                                        <p>No content added yet. Click "Edit Page" to add content.</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <div className="text-center p-4">
+                                    <p>No page selected. Create a new page or select an existing one.</p>
+                                </div>
+                            )}
+                        </div>
+
+                        {aiSuggestions && (
+                            <AIAssistant 
+                                suggestions={aiSuggestions}
+                                onApplySuggestion={handleApplyAISuggestion}
+                                onClose={() => setAiSuggestions(null)}
+                            />
+                        )}
+                    </div>
+
+                    {showPreview && selectedPage && (
+                        <Preview 
+                            page={selectedPage} 
+                            onClose={() => setShowPreview(false)} 
+                        />
+                    )}
+                </div>
+            );
+        };
+
+        const UserCard = ({ user, onStatusChange }) => {
+            const handleStatusChange = (newStatus) => {
+                onStatusChange(user.id, newStatus);
+            };
+
+            return (
+                <div className="user-card">
+                    <div className="user-header">
+                        <div className="user-avatar">
+                            {user.name?.charAt(0).toUpperCase() || user.email?.charAt(0).toUpperCase()}
+                        </div>
+                        <div className="user-info">
+                            <h3>{user.name || 'Unknown User'}</h3>
+                            <p>{user.email}</p>
+                        </div>
+                    </div>
+                    <div className="user-details">
+                        <div className="user-detail">
+                            <i className="fas fa-user-tag"></i>
+                            <span>{user.role || 'Customer'}</span>
+                        </div>
+                        <div className="user-detail">
+                            <i className="fas fa-calendar-alt"></i>
+                            <span>Joined {user.joinDate || 'Recently'}</span>
+                        </div>
+                        <div className="user-detail">
+                            <i className="fas fa-shopping-cart"></i>
+                            <span>{user.orders || 0} orders</span>
+                        </div>
+                    </div>
+                    <div className={`user-status ${user.status}`}>
+                        {user.status.charAt(0).toUpperCase() + user.status.slice(1)}
+                    </div>
+                    <div className="user-actions">
+                        {user.status !== 'active' && (
+                            <button 
+                                className="btn btn-primary btn-sm" 
+                                onClick={() => handleStatusChange('active')}
+                            >
+                                <i className="fas fa-check"></i> Approve
+                            </button>
+                        )}
+                        {user.status !== 'pending' && (
+                            <button 
+                                className="btn btn-secondary btn-sm" 
+                                onClick={() => handleStatusChange('pending')}
+                            >
+                                <i className="fas fa-clock"></i> Pending
+                            </button>
+                        )}
+                        {user.status !== 'suspended' && (
+                            <button 
+                                className="btn btn-outline btn-sm" 
+                                onClick={() => handleStatusChange('suspended')}
+                            >
+                                <i className="fas fa-ban"></i> Suspend
+                            </button>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const UserManagement = () => {
+            const [users, setUsers] = React.useState([
+                {
+                    id: 'user-1',
+                    name: 'John Doe',
+                    email: 'john@example.com',
+                    role: 'Seller',
+                    status: 'active',
+                    joinDate: '2023-01-15',
+                    orders: 24
+                },
+                {
+                    id: 'user-2',
+                    name: 'Jane Smith',
+                    email: 'jane@example.com',
+                    role: 'Buyer',
+                    status: 'active',
+                    joinDate: '2023-02-20',
+                    orders: 12
+                },
+                {
+                    id: 'user-3',
+                    name: 'Mike Johnson',
+                    email: 'mike@example.com',
+                    role: 'Seller',
+                    status: 'pending',
+                    joinDate: '2023-03-10',
+                    orders: 0
+                },
+                {
+                    id: 'user-4',
+                    name: 'Sarah Williams',
+                    email: 'sarah@example.com',
+                    role: 'Buyer',
+                    status: 'suspended',
+                    joinDate: '2023-01-05',
+                    orders: 8
+                }
+            ]);
+            const [filteredUsers, setFilteredUsers] = React.useState([]);
+            const [searchTerm, setSearchTerm] = React.useState('');
+            const [filter, setFilter] = React.useState('all');
+
+            React.useEffect(() => {
+                let result = users;
+                
+                if (searchTerm) {
+                    result = result.filter(user => 
+                        (user.name && user.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+                        user.email.toLowerCase().includes(searchTerm.toLowerCase())
+                    );
+                }
+                
+                if (filter !== 'all') {
+                    result = result.filter(user => user.status === filter);
+                }
+                
+                setFilteredUsers(result);
+            }, [users, searchTerm, filter]);
+
+            const handleStatusChange = (userId, newStatus) => {
+                setUsers(users.map(user => 
+                    user.id === userId ? { ...user, status: newStatus } : user
+                ));
+            };
+
+            return (
+                <div className="user-management">
+                    <div className="user-management-header">
+                        <h1>User Management</h1>
+                        <button className="btn btn-primary">
+                            <i className="fas fa-user-plus"></i> Add New User
+                        </button>
+                    </div>
+
+                    <div className="user-filters">
+                        <div className="search-bar">
+                            <i className="fas fa-search"></i>
+                            <input 
+                                type="text" 
+                                placeholder="Search users..." 
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                            />
+                        </div>
+                        
+                        <div className="filter-tabs">
+                            <button 
+                                className={`filter-tab ${filter === 'all' ? 'active' : ''}`} 
+                                onClick={() => setFilter('all')}
+                            >
+                                All Users
+                            </button>
+                            <button 
+                                className={`filter-tab ${filter === 'active' ? 'active' : ''}`} 
+                                onClick={() => setFilter('active')}
+                            >
+                                Active
+                            </button>
+                            <button 
+                                className={`filter-tab ${filter === 'pending' ? 'active' : ''}`} 
+                                onClick={() => setFilter('pending')}
+                            >
+                                Pending
+                            </button>
+                            <button 
+                                className={`filter-tab ${filter === 'suspended' ? 'active' : ''}`} 
+                                onClick={() => setFilter('suspended')}
+                            >
+                                Suspended
+                            </button>
+                        </div>
+                    </div>
+
+                    <div className="users-grid">
+                        {filteredUsers.length > 0 ? (
+                            filteredUsers.map(user => (
+                                <UserCard 
+                                    key={user.id} 
+                                    user={user} 
+                                    onStatusChange={handleStatusChange} 
+                                />
+                            ))
+                        ) : (
+                            <div className="no-results">
+                                <p>No users found matching your criteria.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ProductCard = ({ product }) => {
+            return (
+                <div className="product-card">
+                    <div className="product-image">
+                        <img src={product.image || 'https://via.placeholder.com/300x200'} alt={product.name} />
+                    </div>
+                    <div className="product-info">
+                        <h3>{product.name}</h3>
+                        <p className="product-price">${product.price}</p>
+                        <div className="product-badges">
+                            {product.featured && <span className="badge featured">Featured</span>}
+                            {product.onOffer && <span className="badge offer">On Offer</span>}
+                            {product.fastSale && <span className="badge fast-sale">Fast Sale</span>}
+                        </div>
+                    </div>
+                    <div className="product-actions">
+                        <button className="btn btn-outline btn-sm">
+                            <i className="fas fa-edit"></i> Edit
+                        </button>
+                        <button className="btn btn-outline btn-sm">
+                            <i className="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const ProductManagement = () => {
+            const [products, setProducts] = React.useState([
+                {
+                    id: 'product-1',
+                    name: 'Premium Headphones',
+                    price: 99.99,
+                    image: 'https://via.placeholder.com/300x200',
+                    featured: true,
+                    onOffer: false,
+                    fastSale: false
+                },
+                {
+                    id: 'product-2',
+                    name: 'Wireless Mouse',
+                    price: 29.99,
+                    image: 'https://via.placeholder.com/300x200',
+                    featured: false,
+                    onOffer: true,
+                    fastSale: false
+                },
+                {
+                    id: 'product-3',
+                    name: 'USB-C Cable',
+                    price: 12.99,
+                    image: 'https://via.placeholder.com/300x200',
+                    featured: false,
+                    onOffer: false,
+                    fastSale: true
+                },
+                {
+                    id: 'product-4',
+                    name: 'Laptop Stand',
+                    price: 49.99,
+                    image: 'https://via.placeholder.com/300x200',
+                    featured: true,
+                    onOffer: true,
+                    fastSale: false
+                }
+            ]);
+
+            return (
+                <div className="product-management">
+                    <div className="product-management-header">
+                        <h1>Product Management</h1>
+                        <button className="btn btn-primary">
+                            <i className="fas fa-plus"></i> Add New Product
+                        </button>
+                    </div>
+
+                    <div className="products-grid">
+                        {products.length > 0 ? (
+                            products.map(product => (
+                                <ProductCard key={product.id} product={product} />
+                            ))
+                        ) : (
+                            <div className="no-results">
+                                <p>No products found.</p>
+                            </div>
+                        )}
+                    </div>
+                </div>
+            );
+        };
+
+        const ColorPicker = ({ label, color, onChange }) => {
+            return (
+                <div className="color-picker">
+                    <div className="color-picker-label">
+                        <div className="color-preview" style={{ backgroundColor: color }}></div>
+                        <span>{label}</span>
+                    </div>
+                    <div className="color-input">
+                        <input 
+                            type="color" 
+                            value={color} 
+                            onChange={(e) => onChange(e.target.value)} 
+                        />
+                        <input 
+                            type="text" 
+                            value={color} 
+                            onChange={(e) => onChange(e.target.value)} 
+                        />
+                    </div>
+                </div>
+            );
+        };
+
+        const ThemeCustomizer = () => {
+            const { theme, updateTheme } = React.useContext(ThemeContext);
+            const [localTheme, setLocalTheme] = React.useState(theme);
+            const [isSaving, setIsSaving] = React.useState(false);
+
+            const handleColorChange = (colorType, color) => {
+                setLocalTheme({
+                    ...localTheme,
+                    colors: {
+                        ...localTheme.colors,
+                        [colorType]: color
+                    }
+                });
+            };
+
+            const handleFontChange = (e) => {
+                setLocalTheme({
+                    ...localTheme,
+                    typography: {
+                        ...localTheme.typography,
+                        fontFamily: e.target.value
+                    }
+                });
+            };
+
+            const handleSaveTheme = async () => {
+                setIsSaving(true);
+                try {
+                    await dataService.saveThemeSettings(localTheme);
+                    updateTheme(localTheme);
+                } catch (error) {
+                    console.error('Error saving theme settings:', error);
+                } finally {
+                    setIsSaving(false);
+                }
+            };
+
+            const handleResetTheme = () => {
+                const defaultTheme = {
+                    colors: {
+                        primary: '#0c4a6e',
+                        secondary: '#075985',
+                        accent: '#0ea5e9',
+                        background: '#f8fafc',
+                        text: '#0f172a',
+                        sidebar: '#020617',
+                        sidebarText: '#f1f5f9'
+                    },
+                    typography: {
+                        fontFamily: 'Inter, sans-serif',
+                        fontSize: '16px'
+                    },
+                    layout: {
+                        sidebarWidth: '280px',
+                        borderRadius: '12px'
+                    }
+                };
+                setLocalTheme(defaultTheme);
+            };
+
+            return (
+                <div className="theme-customizer">
+                    <div className="theme-header">
+                        <h1 className="theme-title">Theme Customization</h1>
+                        <p className="theme-subtitle">Customize the look and feel of your RBM platform</p>
+                    </div>
+                    
+                    <div className="theme-section">
+                        <div className="theme-section-title">
+                            <i className="fas fa-palette"></i>
+                            <span>Colors</span>
+                        </div>
+                        <div className="color-grid">
+                            <ColorPicker 
+                                label="Primary Color" 
+                                color={localTheme.colors.primary} 
+                                onChange={(color) => handleColorChange('primary', color)} 
+                            />
+                            <ColorPicker 
+                                label="Secondary Color" 
+                                color={localTheme.colors.secondary} 
+                                onChange={(color) => handleColorChange('secondary', color)} 
+                            />
+                            <ColorPicker 
+                                label="Accent Color" 
+                                color={localTheme.colors.accent} 
+                                onChange={(color) => handleColorChange('accent', color)} 
+                            />
+                            <ColorPicker 
+                                label="Background Color" 
+                                color={localTheme.colors.background} 
+                                onChange={(color) => handleColorChange('background', color)} 
+                            />
+                            <ColorPicker 
+                                label="Text Color" 
+                                color={localTheme.colors.text} 
+                                onChange={(color) => handleColorChange('text', color)} 
+                            />
+                            <ColorPicker 
+                                label="Sidebar Color" 
+                                color={localTheme.colors.sidebar} 
+                                onChange={(color) => handleColorChange('sidebar', color)} 
+                            />
+                        </div>
+                    </div>
+
+                    <div className="theme-section">
+                        <div className="theme-section-title">
+                            <i className="fas fa-font"></i>
+                            <span>Typography</span>
+                        </div>
+                        <div className="typography-options">
+                            <div className="typography-option">
+                                <div className="typography-label">Font Family</div>
+                                <select 
+                                    className="typography-select" 
+                                    value={localTheme.typography.fontFamily} 
+                                    onChange={handleFontChange}
+                                >
+                                    <option value="Inter, sans-serif">Inter</option>
+                                    <option value="Roboto, sans-serif">Roboto</option>
+                                    <option value="Open Sans, sans-serif">Open Sans</option>
+                                    <option value="Lato, sans-serif">Lato</option>
+                                    <option value="Montserrat, sans-serif">Montserrat</option>
+                                </select>
+                            </div>
+                            <div className="typography-option">
+                                <div className="typography-label">Font Size</div>
+                                <select 
+                                    className="typography-select" 
+                                    value={localTheme.typography.fontSize} 
+                                    onChange={(e) => setLocalTheme({
+                                        ...localTheme,
+                                        typography: {
+                                            ...localTheme.typography,
+                                            fontSize: e.target.value
+                                        }
+                                    })}
+                                >
+                                    <option value="14px">Small</option>
+                                    <option value="16px">Medium</option>
+                                    <option value="18px">Large</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="theme-section">
+                        <div className="theme-section-title">
+                            <i className="fas fa-ruler-combined"></i>
+                            <span>Layout</span>
+                        </div>
+                        <div className="layout-options">
+                            <div className="layout-option">
+                                <div className="layout-label">
+                                    <span>Sidebar Width</span>
+                                    <span className="layout-value">{localTheme.layout.sidebarWidth}</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    className="layout-slider" 
+                                    min="200" 
+                                    max="350" 
+                                    value={parseInt(localTheme.layout.sidebarWidth)} 
+                                    onChange={(e) => setLocalTheme({
+                                        ...localTheme,
+                                        layout: {
+                                            ...localTheme.layout,
+                                            sidebarWidth: `${e.target.value}px`
+                                        }
+                                    })}
+                                />
+                            </div>
+                            <div className="layout-option">
+                                <div className="layout-label">
+                                    <span>Border Radius</span>
+                                    <span className="layout-value">{localTheme.layout.borderRadius}</span>
+                                </div>
+                                <input 
+                                    type="range" 
+                                    className="layout-slider" 
+                                    min="0" 
+                                    max="20" 
+                                    value={parseInt(localTheme.layout.borderRadius)} 
+                                    onChange={(e) => setLocalTheme({
+                                        ...localTheme,
+                                        layout: {
+                                            ...localTheme.layout,
+                                            borderRadius: `${e.target.value}px`
+                                        }
+                                    })}
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div className="theme-actions">
+                        <button 
+                            className="btn btn-primary" 
+                            onClick={handleSaveTheme}
+                            disabled={isSaving}
+                        >
+                            {isSaving ? 'Saving...' : 'Save Changes'}
+                        </button>
+                        <button className="btn btn-outline" onClick={handleResetTheme}>
+                            Reset to Default
+                        </button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Settings = () => {
+            return (
+                <div className="settings">
+                    <h1>Settings</h1>
+                    <div className="settings-content">
+                        <div className="theme-section">
+                            <div className="theme-section-title">
+                                <i className="fas fa-cog"></i>
+                                <span>General Settings</span>
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="site-name">Site Name</label>
+                                <input type="text" id="site-name" defaultValue="RBM" className="form-input" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="site-url">Site URL</label>
+                                <input type="text" id="site-url" defaultValue="https://rbm.com" className="form-input" />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="admin-email">Admin Email</label>
+                                <input type="email" id="admin-email" defaultValue="admin@rbm.com" className="form-input" />
+                            </div>
+                        </div>
+
+                        <div className="theme-section">
+                            <div className="theme-section-title">
+                                <i className="fas fa-bell"></i>
+                                <span>Notification Settings</span>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" defaultChecked /> Email notifications for new users
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" defaultChecked /> Email notifications for new orders
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" /> Email notifications for low stock
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="theme-section">
+                            <div className="theme-section-title">
+                                <i className="fas fa-shield-alt"></i>
+                                <span>Security Settings</span>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" defaultChecked /> Two-factor authentication
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" defaultChecked /> Session timeout after 30 minutes
+                                </label>
+                            </div>
+                            <div className="form-group">
+                                <label>
+                                    <input type="checkbox" /> Require strong passwords
+                                </label>
+                            </div>
+                        </div>
+
+                        <div className="settings-actions">
+                            <button className="btn btn-primary">Save Settings</button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Login = () => {
+            const [email, setEmail] = React.useState('');
+            const [password, setPassword] = React.useState('');
+            const [error, setError] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const { login } = React.useContext(AuthContext);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+
+                try {
+                    await login(email, password);
+                } catch (err) {
+                    setError('Failed to log in. Please check your email and password.');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="auth-container">
+                    <div className="auth-card">
+                        <div className="auth-header">
+                            <div className="auth-logo">RBM</div>
+                            <h1 className="auth-title">Admin Login</h1>
+                            <p className="auth-subtitle">Sign in to your account</p>
+                        </div>
+                        {error && <div className="error-message">{error}</div>}
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="email" className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    className="form-input"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="form-group">
+                                <label htmlFor="password" className="form-label">Password</label>
+                                <input
+                                    type="password"
+                                    id="password"
+                                    className="form-input"
+                                    value={password}
+                                    onChange={(e) => setPassword(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <div className="auth-actions">
+                                <div className="remember-me">
+                                    <input type="checkbox" id="remember" />
+                                    <label htmlFor="remember">Remember me</label>
+                                </div>
+                                <ReactRouterDOM.Link to="/reset-password" className="forgot-password">
+                                    Forgot password?
+                                </ReactRouterDOM.Link>
+                            </div>
+                            <button type="submit" className="auth-submit" disabled={loading}>
+                                {loading ? 'Signing in...' : 'Sign In'}
+                            </button>
+                        </form>
+                        <div className="auth-divider">
+                            <span>or continue with</span>
+                        </div>
+                        <div className="social-login">
+                            <button className="social-btn">
+                                <i className="fab fa-google"></i> Google
+                            </button>
+                            <button className="social-btn">
+                                <i className="fab fa-facebook-f"></i> Facebook
+                            </button>
+                        </div>
+                        <div className="auth-links">
+                            <p>Don't have an account? <ReactRouterDOM.Link to="/signup">Sign up</ReactRouterDOM.Link></p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const ResetPassword = () => {
+            const [email, setEmail] = React.useState('');
+            const [message, setMessage] = React.useState('');
+            const [error, setError] = React.useState('');
+            const [loading, setLoading] = React.useState(false);
+            const { resetPassword } = React.useContext(AuthContext);
+
+            const handleSubmit = async (e) => {
+                e.preventDefault();
+                setLoading(true);
+                setError('');
+                setMessage('');
+
+                try {
+                    await resetPassword(email);
+                    setMessage('Password reset email sent. Check your inbox.');
+                } catch (err) {
+                    setError('Failed to send reset email. Please check your email address.');
+                    console.error(err);
+                } finally {
+                    setLoading(false);
+                }
+            };
+
+            return (
+                <div className="auth-container">
+                    <div className="auth-card">
+                        <div className="auth-header">
+                            <div className="auth-logo">RBM</div>
+                            <h1 className="auth-title">Reset Password</h1>
+                            <p className="auth-subtitle">Enter your email to reset your password</p>
+                        </div>
+                        {error && <div className="error-message">{error}</div>}
+                        {message && <div className="success-message">{message}</div>}
+                        <form onSubmit={handleSubmit}>
+                            <div className="form-group">
+                                <label htmlFor="email" className="form-label">Email</label>
+                                <input
+                                    type="email"
+                                    id="email"
+                                    className="form-input"
+                                    value={email}
+                                    onChange={(e) => setEmail(e.target.value)}
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="auth-submit" disabled={loading}>
+                                {loading ? 'Sending...' : 'Reset Password'}
+                            </button>
+                        </form>
+                        <div className="auth-links">
+                            <p>Remember your password? <ReactRouterDOM.Link to="/login">Sign in</ReactRouterDOM.Link></p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const { currentUser } = React.useContext(AuthContext);
+
+            return (
+                <ReactRouterDOM.BrowserRouter>
+                    <div className="app">
+                        {currentUser ? (
+                            <div className="app-container">
+                                <Sidebar />
+                                <div className="main-content">
+                                    <Topbar />
+                                    <div className="content">
+                                        <ReactRouterDOM.Routes>
+                                            <ReactRouterDOM.Route path="/" element={<Dashboard />} />
+                                            <ReactRouterDOM.Route path="/page-builder" element={<PageBuilder />} />
+                                            <ReactRouterDOM.Route path="/users" element={<UserManagement />} />
+                                            <ReactRouterDOM.Route path="/products" element={<ProductManagement />} />
+                                            <ReactRouterDOM.Route path="/theme" element={<ThemeCustomizer />} />
+                                            <ReactRouterDOM.Route path="/settings" element={<Settings />} />
+                                            <ReactRouterDOM.Route path="*" element={<ReactRouterDOM.Navigate to="/" replace />} />
+                                        </ReactRouterDOM.Routes>
+                                    </div>
+                                </div>
+                            </div>
+                        ) : (
+                            <ReactRouterDOM.Routes>
+                                <ReactRouterDOM.Route path="/login" element={<Login />} />
+                                <ReactRouterDOM.Route path="/reset-password" element={<ResetPassword />} />
+                                <ReactRouterDOM.Route path="*" element={<ReactRouterDOM.Navigate to="/login" replace />} />
+                            </ReactRouterDOM.Routes>
+                        )}
+                    </div>
+                </ReactRouterDOM.BrowserRouter>
+            );
+        };
+
+        const Root = () => {
+            return (
+                <AuthProvider>
+                    <ThemeProvider>
+                        <App />
+                    </ThemeProvider>
+                </AuthProvider>
+            );
+        };
+
+        ReactDOM.render(<Root />, document.getElementById('root'));
+    </script>
+</body>
+</html>
